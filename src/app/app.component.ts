@@ -12,9 +12,10 @@ export class AppComponent implements OnInit, AfterViewInit {
 
 
   // Dynamically create a container in the form of a DIV element to play the remote video track.
-  remotePlayerContainer = document.getElementById("remote-player-container");
+  remotePlayerContainer:HTMLElement
   // Dynamically create a container in the form of a DIV element to play the local video track.
-  @ViewChild('localPlayerContainer') localPlayerContainer: any;
+  // @ViewChild('localPlayerContainer') localPlayerContainer: any;
+  localPlayerContainer:HTMLElement
 
 
 
@@ -42,6 +43,13 @@ export class AppComponent implements OnInit, AfterViewInit {
   }
 
   ngAfterViewInit(): void {
+
+      // Dynamically create a container in the form of a DIV element to play the remote video track.
+  this.remotePlayerContainer = document.getElementById("remote-player-container");
+  // Dynamically create a container in the form of a DIV element to play the local video track.
+  // @ViewChild('localPlayerContainer') localPlayerContainer: any;
+  this.localPlayerContainer = document.getElementById('local-player-container');
+
     this.agoraEngine = AgoraRTC.createClient({ mode: 'rtc', codec: 'vp9' });
     // Specify the ID of the DIV container. You can use the uid of the local user.
     this.localPlayerContainer.id = 'user-id';
@@ -56,7 +64,6 @@ export class AppComponent implements OnInit, AfterViewInit {
   }
 
   async join(userId: number) {
-    const localPlayerContainer = this.localPlayerContainer;
     await this.agoraEngine.join(
       'f6cc6f88f9ef4bd385c9e38fadf1e9e5',
       'test',
@@ -66,16 +73,17 @@ export class AppComponent implements OnInit, AfterViewInit {
     // Create a local audio track from the audio sampled by a microphone.
     this.channelParameters.localAudioTrack = await AgoraRTC.createMicrophoneAudioTrack();
     // Create a local video track from the video captured by a camera.
-    // this.channelParameters.localVideoTrack = await AgoraRTC.createCameraVideoTrack();
+    this.channelParameters.localVideoTrack = await AgoraRTC.createCameraVideoTrack();
     // Append the local video container to the page body.
-    document.body.append(localPlayerContainer);
+    document.body.append(this.localPlayerContainer);
     // Publish the local audio and video tracks in the channel.
     await this.agoraEngine.publish([
       this.channelParameters.localAudioTrack,
-      // this.channelParameters.localVideoTrack,
+      this.channelParameters.localVideoTrack,
     ]);
     // Play the local video track.
-    // this.channelParameters.localVideoTrack.play(localPlayerContainer);
+    console.log("local player container is ",this.localPlayerContainer)
+    this.channelParameters.localVideoTrack.play(this.localPlayerContainer,{fit:'cover'});
     this.subscribeToEvents()
   };
 
@@ -137,7 +145,7 @@ export class AppComponent implements OnInit, AfterViewInit {
       case "user-published":
         if (args[1] == "video") {
           // Retrieve the remote video track.
-          // this.channelParameters.remoteVideoTrack = args[0].videoTrack;
+          this.channelParameters.remoteVideoTrack = args[0].videoTrack;
           // Retrieve the remote audio track.
           this.channelParameters.remoteAudioTrack = args[0].audioTrack;
           // Save the remote user id for reuse.
@@ -150,7 +158,7 @@ export class AppComponent implements OnInit, AfterViewInit {
           // Append the remote container to the page body.
           document.body.append(this.remotePlayerContainer);
           // Play the remote video track.
-          // this.channelParameters.remoteVideoTrack.play(this.remotePlayerContainer);
+          this.channelParameters.remoteVideoTrack.play(this.remotePlayerContainer);
         }
         // Subscribe and play the remote audio track If the remote user publishes the audio track only.
         if (args[1] == "audio") {
@@ -165,7 +173,7 @@ export class AppComponent implements OnInit, AfterViewInit {
   async leave() {
     // Destroy the local audio and video tracks.
     this.channelParameters.localAudioTrack.close();
-    // this.channelParameters.localVideoTrack.close();
+    this.channelParameters.localVideoTrack.close();
     // Remove the containers you created for the local video and remote video.
     await this.agoraEngine.leave();
   };
