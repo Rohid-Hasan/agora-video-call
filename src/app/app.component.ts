@@ -12,10 +12,10 @@ export class AppComponent implements OnInit, AfterViewInit {
 
 
   // Dynamically create a container in the form of a DIV element to play the remote video track.
-  remotePlayerContainer:HTMLElement
+  remotePlayerContainer: HTMLElement
   // Dynamically create a container in the form of a DIV element to play the local video track.
   // @ViewChild('localPlayerContainer') localPlayerContainer: any;
-  localPlayerContainer:HTMLElement
+  localPlayerContainer: HTMLElement
 
 
 
@@ -44,11 +44,11 @@ export class AppComponent implements OnInit, AfterViewInit {
 
   ngAfterViewInit(): void {
 
-      // Dynamically create a container in the form of a DIV element to play the remote video track.
-  this.remotePlayerContainer = document.getElementById("remote-player-container");
-  // Dynamically create a container in the form of a DIV element to play the local video track.
-  // @ViewChild('localPlayerContainer') localPlayerContainer: any;
-  this.localPlayerContainer = document.getElementById('local-player-container');
+    // Dynamically create a container in the form of a DIV element to play the remote video track.
+    this.remotePlayerContainer = document.getElementById("remote-player-container");
+    // Dynamically create a container in the form of a DIV element to play the local video track.
+    // @ViewChild('localPlayerContainer') localPlayerContainer: any;
+    this.localPlayerContainer = document.getElementById('local-player-container');
 
     this.agoraEngine = AgoraRTC.createClient({ mode: 'rtc', codec: 'vp9' });
     // Specify the ID of the DIV container. You can use the uid of the local user.
@@ -69,19 +69,19 @@ export class AppComponent implements OnInit, AfterViewInit {
     await this.agoraEngine.join(
       'f6cc6f88f9ef4bd385c9e38fadf1e9e5',
       'test',
-      '007eJxTYDAuqpj7uORSXuH5/e9VHl25P7nW0XmCovwP6693nBZfnOarwJBmlpxslmZhkWaZmmaSlGJsYZpsmWpskZaYkmaYaplqKtm8JbUhkJFhyV43FkYGCATxWRhKUotLGBgAQ4Ei3g==',
+      '007eJxTYEiw7M99cNREalGuUvvHt7orvzd/D/TSbZt1TdlAW+/1wyYFhjSz5GSzNAuLNMvUNJOkFGML02TLVGOLtMSUNMNUy1RTgSdbUxsCGRkSPwkyMEIhiM/CUJJaXMLAAACpYyEU',
       `user-${userId}`
     );
     // Create a local audio track from the audio sampled by a microphone.
     this.channelParameters.localAudioTrack = await AgoraRTC.createMicrophoneAudioTrack();
     // Create a local video track from the video captured by a camera.
-    this.channelParameters.localVideoTrack = await AgoraRTC.createCameraVideoTrack();
+    // this.channelParameters.localVideoTrack = await AgoraRTC.createCameraVideoTrack();
     // Append the local video container to the page body.
     document.body.append(this.localPlayerContainer);
     // Publish the local audio and video tracks in the channel.
     await this.agoraEngine.publish([
       this.channelParameters.localAudioTrack,
-      this.channelParameters.localVideoTrack,
+      // this.channelParameters.localVideoTrack,
     ]);
     // Play the local video track.
     console.log("local player container is ",this.localPlayerContainer)
@@ -114,14 +114,23 @@ export class AppComponent implements OnInit, AfterViewInit {
     this.agoraEngine.on("user-published", async (user, mediaType) => {
       // Subscribe to the remote user when the SDK triggers the "user-published" event.
       await this.agoraEngine.subscribe(user, mediaType);
-      console.log("subscribe success");
+      console.log("User published with subscription");;
       this.handleVSDKEvents("user-published", user, mediaType);
     });
 
     // Listen for the "user-unpublished" event.
     this.agoraEngine.on("user-unpublished", (user) => {
-      console.log(user.uid + "has left the channel");
+      console.log("user unpublished ", user.uid + "has left the channel");
     });
+
+    this.agoraEngine.on("user-joined", (user: IAgoraRTCRemoteUser) => {
+      const userId = user.uid;
+      console.log("remote user joined", userId);
+
+    });
+    this.agoraEngine.on("user-left", (user: IAgoraRTCRemoteUser) => {
+      console.log("Remote user left", user.uid);
+    })
 
   }
 
@@ -154,7 +163,7 @@ export class AppComponent implements OnInit, AfterViewInit {
           // Save the remote user id for reuse.
           this.channelParameters.remoteUid = args[0].uid.toString();
           // Specify the ID of the DIV container. You can use the uid of the remote user.
-          this.remotePlayerContainer.id = args[0].uid.toString();
+          // this.remotePlayerContainer.id = args[0].uid.toString();
           this.channelParameters.remoteUid = args[0].uid.toString();
           this.remotePlayerContainer.textContent =
             "Remote user " + args[0].uid.toString();
