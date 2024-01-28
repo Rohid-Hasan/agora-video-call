@@ -61,6 +61,8 @@ export class AppComponent implements OnInit, AfterViewInit {
     document.getElementById("channelName").innerHTML = 'My channel';
     // Display User name
     document.getElementById("userId").innerHTML = 'User Name Global';
+
+    this.subscribeToEvents()
   }
 
   async join(userId: number) {
@@ -84,7 +86,7 @@ export class AppComponent implements OnInit, AfterViewInit {
     // Play the local video track.
     console.log("local player container is ",this.localPlayerContainer)
     this.channelParameters.localVideoTrack.play(this.localPlayerContainer,{fit:'cover'});
-    this.subscribeToEvents()
+
   };
 
   async checkCameraAvailability() {
@@ -143,6 +145,7 @@ export class AppComponent implements OnInit, AfterViewInit {
   handleVSDKEvents = (eventName: string, ...args: any) => {
     switch (eventName) {
       case "user-published":
+        //here agrs[1] = mediaType:'audio' | 'video' | 'datachannel'
         if (args[1] == "video") {
           // Retrieve the remote video track.
           this.channelParameters.remoteVideoTrack = args[0].videoTrack;
