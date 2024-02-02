@@ -3,10 +3,17 @@
     <div class="wrapper">
       <div #localPlayerContainer class="local">
         <div class="user" *ngIf="!channelParameters.localVideoTrack?.enabled">
-          DOCTOR
+          {{channelParameters.localUid}}
         </div>
       </div>
-      <div #remotePlayerContainer class="remote"></div>
+      <div #remotePlayerContainer class="remote">
+        <div class="user" *ngIf="!channelParameters.remoteVideoTrack?.enabled">
+          {{channelParameters.remoteUid}}
+        </div>
+        <div class="user" *ngIf="!channelParameters.remoteUid">
+          Waiting for users to join !!
+        </div>
+      </div>
     </div>
   </div>
   <div class="buttons-container">

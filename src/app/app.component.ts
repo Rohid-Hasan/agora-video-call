@@ -23,6 +23,7 @@ export class AppComponent implements OnInit, AfterViewInit {
     remoteVideoTrack?: ICameraVideoTrack,
     // A variable to hold the remote user id.s
     remoteUid?: string,
+    localUid?: string
   } = {};
 
   constructor() {
@@ -38,6 +39,7 @@ export class AppComponent implements OnInit, AfterViewInit {
   }
 
   async join(userId: number) {
+    this.channelParameters.localUid = 'user-' + userId;
     await this.agoraEngine.join(
       'f6cc6f88f9ef4bd385c9e38fadf1e9e5',
       'test',
