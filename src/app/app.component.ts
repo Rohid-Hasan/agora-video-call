@@ -1,5 +1,5 @@
 import { AfterViewInit, Component, ElementRef, OnInit, ViewChild } from '@angular/core';
-import AgoraRTC, { IAgoraRTCClient, IAgoraRTCRemoteUser, ICameraVideoTrack, IMicrophoneAudioTrack } from 'agora-rtc-sdk-ng';
+import AgoraRTC, { IAgoraRTCClient, IAgoraRTCRemoteUser, ICameraVideoTrack, IMicrophoneAudioTrack, IRemoteAudioTrack, IRemoteVideoTrack } from 'agora-rtc-sdk-ng';
 
 
 @Component({
@@ -18,11 +18,11 @@ export class AppComponent implements OnInit, AfterViewInit {
     // A variable to hold a local video track.
     localVideoTrack?: ICameraVideoTrack,
     // A variable to hold a remote audio track.
-    remoteAudioTrack?: IMicrophoneAudioTrack,
+    remoteAudioTrack?: IRemoteAudioTrack,
     // A variable to hold a remote video track.
-    remoteVideoTrack?: ICameraVideoTrack,
+    remoteVideoTrack?: IRemoteVideoTrack,
     // A variable to hold the remote user id.s
-    remoteUid?: string,
+    remoteUser?: IAgoraRTCRemoteUser,
     localUid?: string
   } = {};
 
@@ -68,7 +68,7 @@ export class AppComponent implements OnInit, AfterViewInit {
 
     // Listen for the "user-unpublished" event.
     this.agoraEngine.on("user-unpublished", (user, mediaType) => {
-      console.log("user unpublished ", user.uid + mediaType);
+      console.log("user unpublished-", mediaType, '- has video -', user.hasVideo, '- has audio-', user.hasAudio);
     });
 
     this.agoraEngine.on("user-joined", (user: IAgoraRTCRemoteUser) => {
@@ -78,6 +78,7 @@ export class AppComponent implements OnInit, AfterViewInit {
     });
     this.agoraEngine.on("user-left", (user: IAgoraRTCRemoteUser) => {
       console.log("Remote user left", user.uid);
+      this.channelParameters.remoteUser = null;
     })
 
   }
@@ -99,23 +100,23 @@ export class AppComponent implements OnInit, AfterViewInit {
   }
 
 
-  handleVSDKEvents = (eventName: string, ...args: any) => {
+  handleVSDKEvents = (eventName: string, user: IAgoraRTCRemoteUser, mediaType: 'video' | 'audio' | 'datachannel') => {
     switch (eventName) {
       case "user-published":
         //here agrs[1] = mediaType:'audio' | 'video' | 'datachannel'
-        if (args[1] == "video") {
+        if (mediaType == "video") {
           // Retrieve the remote video track.
-          this.channelParameters.remoteVideoTrack = args[0].videoTrack;
+          this.channelParameters.remoteVideoTrack = user.videoTrack;
           // Retrieve the remote audio track.
-          this.channelParameters.remoteAudioTrack = args[0].audioTrack;
+          this.channelParameters.remoteAudioTrack = user.audioTrack;
           // Save the remote user id for reuse.
-          this.channelParameters.remoteUid = args[0].uid.toString();
+          this.channelParameters.remoteUser = user;
           this.channelParameters.remoteVideoTrack.play(this.remotePlayerContainer.nativeElement);
         }
         // Subscribe and play the remote audio track If the remote user publishes the audio track only.
-        if (args[1] == "audio") {
+        if (mediaType == "audio") {
           // Get the RemoteAudioTrack object in the AgoraRTCRemoteUser object.
-          this.channelParameters.remoteAudioTrack = args[0].audioTrack;
+          this.channelParameters.remoteAudioTrack = user.audioTrack;
           // Play the remote audio track. No need to pass any DOM element.
           this.channelParameters.remoteAudioTrack.play();
         }
