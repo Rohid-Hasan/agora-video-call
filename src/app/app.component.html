@@ -2,12 +2,12 @@
   <div class="video-container">
     <div class="wrapper">
       <div #localPlayerContainer class="local">
-        <div class="user" *ngIf="!channelParameters.localVideoTrack?.enabled">
+        <div class="user" style="border-right:1px solid red;" *ngIf="!channelParameters.localVideoTrack?.enabled">
           {{channelParameters.localUid}}
         </div>
       </div>
       <div #remotePlayerContainer class="remote">
-        <div class="user" *ngIf="!channelParameters.remoteUser?.hasVideo">
+        <div class="user" style="border-left:1px solid red;" *ngIf="!channelParameters.remoteUser?.hasVideo">
           {{ channelParameters.remoteUser ? channelParameters.remoteUser.uid : "waiting for others to join !!"}}
         </div>
       </div>
