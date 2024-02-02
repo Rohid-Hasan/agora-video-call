@@ -1,13 +1,23 @@
-<div id="channelName"></div>
-
-<div id="userId"></div>
-
-<div #localPlayerContainer id="local-player-container" style="height: 480;width: 640px;padding:5em;">
+<div class="full-wrapper">
+  <div class="video-container">
+    <div class="wrapper">
+      <div #localPlayerContainer class="local">
+        <div class="user" *ngIf="!channelParameters.localVideoTrack?.enabled">
+          DOCTOR
+        </div>
+      </div>
+      <div #remotePlayerContainer class="remote"></div>
+    </div>
+  </div>
+  <div class="buttons-container">
+    <div class="buttons">
+      <!-- this 2 buttons should be removed  -->
+      <!-- call join function in after view init in docshub -->
+      <button (click)="join(1)">Join 1</button>
+      <button (click)="join(2)">Join 2</button>
+    <button (click)="muteOrUnmuteAudio()">{{channelParameters.localAudioTrack?.muted ? "Unmute" : "Mute"}}</button>
+    <button (click)="turnCameraOnOrOff()">Camera {{channelParameters.localVideoTrack?.enabled ? "Switch OFF" : "Switch ON"}}</button>
+    <button (click)="leave()">Leave</button>
+    </div>
+  </div>
 </div>
-<div id="remote-player-container" style="height: 480;width: 640px;padding:5em;"></div>
-
-<button (click)="join(1)">Join 1</button>
-<button (click)="muteOrUnmuteAudio()">Mute or unmute</button>
-<button (click)="turnCameraOnOrOff()">Camera ON OFF</button>
-<button (click)="join(2)">Join 2</button>
-<button (click)="leave()">Leave</button>

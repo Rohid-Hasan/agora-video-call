@@ -1,0 +1,44 @@
+.full-wrapper {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
+.video-container {
+  flex-grow: 1;
+  position: relative;
+}
+
+.wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+
+}
+
+.local,
+.remote {
+  width: 50%; /* Video takes the full width */
+  height: 100%;
+  .user{
+    background-color: lightblue;
+    width: 50%;
+    position: absolute;
+    height: 100%;
+    z-index:2;
+    border-right: 2px  solid red;
+  }
+}
+
+
+.buttons-container {
+  position: absolute;
+  bottom: 5em;
+  left:35%;
+  z-index: 3;
+}
+
+button{
+  margin:1em;
+}

@@ -8,17 +8,8 @@ import AgoraRTC, { IAgoraRTCClient, IAgoraRTCRemoteUser, ICameraVideoTrack, IMic
   styleUrls: ['./app.component.scss']
 })
 export class AppComponent implements OnInit, AfterViewInit {
-
-
-
-  // Dynamically create a container in the form of a DIV element to play the remote video track.
-  remotePlayerContainer: HTMLElement
-  // Dynamically create a container in the form of a DIV element to play the local video track.
-  // @ViewChild('localPlayerContainer') localPlayerContainer: any;
-  localPlayerContainer: HTMLElement
-
-
-
+  @ViewChild('remotePlayerContainer', { static: false }) remotePlayerContainer!: ElementRef;
+  @ViewChild('localPlayerContainer', { static: false }) localPlayerContainer!: ElementRef;
 
   agoraEngine: IAgoraRTCClient;
   channelParameters: {
@@ -39,29 +30,10 @@ export class AppComponent implements OnInit, AfterViewInit {
   }
 
   ngOnInit(): void {
-    this.checkCameraAvailability();
   }
 
   ngAfterViewInit(): void {
-
-    // Dynamically create a container in the form of a DIV element to play the remote video track.
-    this.remotePlayerContainer = document.getElementById("remote-player-container");
-    // Dynamically create a container in the form of a DIV element to play the local video track.
-    // @ViewChild('localPlayerContainer') localPlayerContainer: any;
-    this.localPlayerContainer = document.getElementById('local-player-container');
-
     this.agoraEngine = AgoraRTC.createClient({ mode: 'rtc', codec: 'vp9' });
-    // Specify the ID of the DIV container. You can use the uid of the local user.
-    this.localPlayerContainer.id = 'user-id';
-    // Set the textContent property of the local video container to the local user id.
-    this.localPlayerContainer.textContent = "Local user";
-    // Set the local video container size.
-
-    // Display channel name
-    document.getElementById("channelName").innerHTML = 'My channel';
-    // Display User name
-    document.getElementById("userId").innerHTML = 'User Name Global';
-
     this.subscribeToEvents()
   }
 
@@ -69,58 +41,32 @@ export class AppComponent implements OnInit, AfterViewInit {
     await this.agoraEngine.join(
       'f6cc6f88f9ef4bd385c9e38fadf1e9e5',
       'test',
-      '007eJxTYEiw7M99cNREalGuUvvHt7orvzd/D/TSbZt1TdlAW+/1wyYFhjSz5GSzNAuLNMvUNJOkFGML02TLVGOLtMSUNMNUy1RTgSdbUxsCGRkSPwkyMEIhiM/CUJJaXMLAAACpYyEU',
+      '007eJxTYDBh+tcQzPnt6CZXbRf7e81tnZGP+sNnq211ua3y3K7qzTIFhjSz5GSzNAuLNMvUNJOkFGML02TLVGOLtMSUNMNUy1RT3Yw9qQ2BjAznNc1ZGRkgEMRnYShJLS5hYAAAfhsgWg==',
       `user-${userId}`
     );
-    // Create a local audio track from the audio sampled by a microphone.
     this.channelParameters.localAudioTrack = await AgoraRTC.createMicrophoneAudioTrack();
-    // Create a local video track from the video captured by a camera.
-    // this.channelParameters.localVideoTrack = await AgoraRTC.createCameraVideoTrack();
-    // Append the local video container to the page body.
-    document.body.append(this.localPlayerContainer);
-    // Publish the local audio and video tracks in the channel.
+    this.channelParameters.localVideoTrack = await AgoraRTC.createCameraVideoTrack();
     await this.agoraEngine.publish([
       this.channelParameters.localAudioTrack,
-      // this.channelParameters.localVideoTrack,
+      this.channelParameters.localVideoTrack,
     ]);
     // Play the local video track.
-    console.log("local player container is ",this.localPlayerContainer)
-    this.channelParameters.localVideoTrack.play(this.localPlayerContainer,{fit:'cover'});
-
+    this.channelParameters.localVideoTrack.play(this.localPlayerContainer.nativeElement);
   };
 
-  async checkCameraAvailability() {
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-      // Camera is available, you can proceed with video call implementation
-      console.log(" Camera is available ");
-      // Don't forget to stop the stream if you don't need it anymore
-      stream.getTracks().forEach(track => track.stop());
-    } catch (error: any) {
-      // Handle the error when camera is not accessible
-      if (error.name === 'NotAllowedError' || error.name === 'NotFoundError') {
-        console.error('Camera not accessible or not found.', error);
-        // You can provide a user-friendly message or take appropriate actions here
-      } else {
-        console.error('Error accessing camera:', error);
-        // Handle other errors as needed
-      }
-    }
-  }
 
 
   subscribeToEvents() {
     // Event Listeners
     this.agoraEngine.on("user-published", async (user, mediaType) => {
-      // Subscribe to the remote user when the SDK triggers the "user-published" event.
       await this.agoraEngine.subscribe(user, mediaType);
-      console.log("User published with subscription");;
+      console.log("User published -", mediaType);
       this.handleVSDKEvents("user-published", user, mediaType);
     });
 
     // Listen for the "user-unpublished" event.
-    this.agoraEngine.on("user-unpublished", (user) => {
-      console.log("user unpublished ", user.uid + "has left the channel");
+    this.agoraEngine.on("user-unpublished", (user, mediaType) => {
+      console.log("user unpublished ", user.uid + mediaType);
     });
 
     this.agoraEngine.on("user-joined", (user: IAgoraRTCRemoteUser) => {
@@ -162,15 +108,7 @@ export class AppComponent implements OnInit, AfterViewInit {
           this.channelParameters.remoteAudioTrack = args[0].audioTrack;
           // Save the remote user id for reuse.
           this.channelParameters.remoteUid = args[0].uid.toString();
-          // Specify the ID of the DIV container. You can use the uid of the remote user.
-          // this.remotePlayerContainer.id = args[0].uid.toString();
-          this.channelParameters.remoteUid = args[0].uid.toString();
-          this.remotePlayerContainer.textContent =
-            "Remote user " + args[0].uid.toString();
-          // Append the remote container to the page body.
-          document.body.append(this.remotePlayerContainer);
-          // Play the remote video track.
-          this.channelParameters.remoteVideoTrack.play(this.remotePlayerContainer);
+          this.channelParameters.remoteVideoTrack.play(this.remotePlayerContainer.nativeElement);
         }
         // Subscribe and play the remote audio track If the remote user publishes the audio track only.
         if (args[1] == "audio") {
